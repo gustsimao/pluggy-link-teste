@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Teste Pluggy Link</title>
+  <!-- SDK Pluggy Link -->
   <script src="https://cdn.pluggy.ai/pluggy-link/v3/pluggy-link.js" defer></script>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    button { font-size: 18px; padding: 10px 20px; }
-    pre { background: #f4f4f4; padding: 10px; white-space: pre-wrap; }
+    body { font-family: Arial; padding: 30px; }
+    button { padding: 10px 20px; font-size: 18px; }
+    pre { margin-top: 20px; padding: 10px; background: #f9f9f9; border: 1px solid #ccc; }
   </style>
 </head>
 <body>
   <h2>🔗 Teste da API Pluggy</h2>
   <button id="btnConectar">Conectar Conta Bancária</button>
-  <h3>📋 Transações:</h3>
-  <pre id="resultado">Nenhuma transação ainda.</pre>
+  <pre id="resultado">Nenhuma transação carregada.</pre>
 
   <script defer>
     window.onload = () => {
-      const clientId = "fd905adc-6c7a-4bff-8564-0d1335785c6f";
+      const clientId = "65c9e09d-9f6b-4283-882a-16a1e7d40679";
       const clientSecret = "a89d5902-587f-4a45-b9a6-3101a517d2c5";
 
       async function gerarUserToken() {
         const response = await fetch("https://api.pluggy.ai/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ clientId, clientSecret }),
+          body: JSON.stringify({ clientId, clientSecret })
         });
         if (!response.ok) throw new Error("Erro ao gerar userToken");
         const data = await response.json();
@@ -33,45 +33,48 @@
       }
 
       async function buscarContas(itemId) {
-        const response = await fetch(`https://api.pluggy.ai/accounts?itemId=${itemId}`);
-        const data = await response.json();
+        const res = await fetch(`https://api.pluggy.ai/accounts?itemId=${itemId}`);
+        const data = await res.json();
         return data.results[0]?.id;
       }
 
       async function buscarTransacoes(accountId) {
-        const response = await fetch(`https://api.pluggy.ai/transactions?accountId=${accountId}&pageSize=10`);
-        const data = await response.json();
+        const res = await fetch(`https://api.pluggy.ai/transactions?accountId=${accountId}&pageSize=10`);
+        const data = await res.json();
         return data.results;
       }
 
-      document.getElementById("btnConectar").onclick = async () => {
-        const resultado = document.getElementById("resultado");
-        resultado.textContent = "🔄 Conectando...";
+      const btn = document.getElementById('btnConectar');
+      const resultado = document.getElementById('resultado');
 
+      btn.onclick = async () => {
+        resultado.textContent = "🔄 Conectando...";
         try {
           const userToken = await gerarUserToken();
 
-          const link = new PluggyLink({
+          if (typeof PluggyLink === 'undefined') {
+            resultado.textContent = "❌ ERRO: PluggyLink não carregado.";
+            return;
+          }
+
+          const pluggyLink = new PluggyLink({
             connectToken: userToken,
             onSuccess: async (item) => {
-              resultado.textContent = "✅ Conta conectada. Buscando transações...";
+              resultado.textContent = "🔍 Conta conectada. Carregando transações...";
               const accountId = await buscarContas(item.id);
               const transacoes = await buscarTransacoes(accountId);
-
               resultado.textContent = transacoes.map(tx =>
                 `${tx.date} - ${tx.description} - R$ ${tx.amount.toFixed(2)}`
               ).join("\n") || "Nenhuma transação encontrada.";
             },
             onError: (err) => {
-              alert("Erro na conexão: " + err.message);
-              resultado.textContent = "Erro na conexão.";
+              resultado.textContent = "❌ Erro: " + err.message;
             }
           });
 
-          link.open();
+          pluggyLink.open();
         } catch (e) {
-          alert("Erro: " + e.message);
-          resultado.textContent = "❌ Erro: " + e.message;
+          resultado.textContent = "❌ Erro geral: " + e.message;
         }
       };
     };
