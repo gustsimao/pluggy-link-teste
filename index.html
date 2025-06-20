@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Teste Pluggy Link</title>
-  <!-- SDK Pluggy Link -->
-  <script src="https://cdn.pluggy.ai/pluggy-link/v3/pluggy-link.js" defer></script>
+  <!-- SDK Pluggy Link - Removido o defer -->
+  <script src="https://cdn.pluggy.ai/pluggy-link/v3/pluggy-link.js"></script>
   <style>
     body { font-family: Arial; padding: 30px; }
     button { padding: 10px 20px; font-size: 18px; }
@@ -16,8 +16,9 @@
   <button id="btnConectar">Conectar Conta Bancária</button>
   <pre id="resultado">Nenhuma transação carregada.</pre>
 
-  <script defer>
-    window.onload = () => {
+  <script>
+    // Removido o defer e colocado o código diretamente
+    document.addEventListener('DOMContentLoaded', () => {
       const clientId = "fd905adc-6c7a-4bff-8564-0d1335785c6f";
       const clientSecret = "a89d5902-587f-4a45-b9a6-3101a517d2c5";
 
@@ -52,12 +53,13 @@
         try {
           const userToken = await gerarUserToken();
 
-          if (typeof PluggyLink === 'undefined') {
-            resultado.textContent = "❌ ERRO: PluggyLink não carregado.";
+          // Verifica se o PluggyLink está disponível
+          if (typeof window.PluggyLink === 'undefined') {
+            resultado.textContent = "❌ ERRO: PluggyLink não carregado. Recarregue a página.";
             return;
           }
 
-          const pluggyLink = new PluggyLink({
+          const pluggyLink = new window.PluggyLink({
             connectToken: userToken,
             onSuccess: async (item) => {
               resultado.textContent = "🔍 Conta conectada. Carregando transações...";
@@ -77,7 +79,7 @@
           resultado.textContent = "❌ Erro geral: " + e.message;
         }
       };
-    };
+    });
   </script>
 </body>
 </html>
