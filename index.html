@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teste Pluggy Link</title>
+  <script src="https://cdn.pluggy.ai/pluggy-link/v3/pluggy-link.js" defer></script>
+</head>
+<body>
+  <button id="btnConectar">Conectar Conta Bancária</button>
+  <pre id="resultado"></pre>
+
+  <script defer>
+    window.onload = () => {
+      document.getElementById('btnConectar').onclick = () => {
+        if (typeof PluggyLink === 'undefined') {
+          alert('PluggyLink não foi carregado corretamente.');
+          return;
+        }
+
+        const pluggyLink = new PluggyLink({
+          connectToken: 'teste-token',
+          onSuccess: (item) => {
+            document.getElementById('resultado').textContent = JSON.stringify(item, null, 2);
+          },
+          onError: (err) => {
+            alert('Erro: ' + err.message);
+          },
+        });
+        pluggyLink.open();
+      };
+    };
+  </script>
+</body>
+</html>
