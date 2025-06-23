@@ -23,8 +23,8 @@
     // Carrega o script dinamicamente
     function carregarPluggyLink() {
       return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = "https://cdn.pluggy.ai/pluggy-link/v3/pluggy-link.js";
+        const script = document.createElement('script');        
+        script.src = "https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js";
         script.onload = resolve;
         script.onerror = () => reject(new Error("Erro ao carregar pluggy-link.js"));
         document.head.appendChild(script);
