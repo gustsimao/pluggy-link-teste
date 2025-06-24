@@ -23,57 +23,19 @@
   <pre id="saida">Clique no botão para iniciar</pre>
 
   <script>
-    const clientId = "fd905adc-6c7a-4bff-8564-0d1335785c6f";
-    const clientSecret = "a89d5902-587f-4a45-b9a6-3101a517d2c5";
+    const clientId = "fd905adc-6c7a-4bff-8564-0d1335785c6f"; // insira o correto
+    const clientSecret = "a93fac1f8dabec785e57c92c8296ff35ff57a256ecf97adaa338caf6dac65a9179c1e9d8cc76a7c457b5a7408ea8e4047e45cd6afb7283578eef13b8135da8dccbe959f403da4272cabd83d2fca3560a"; // insira o correto
+
     const saida = document.getElementById("saida");
 
-   async function gerarUserToken() {
-  try {
-    // Etapa 1: autenticar
-    const authResponse = await fetch("https://api.pluggy.ai/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientId, clientSecret })
-    });
-
-    if (!authResponse.ok) {
-      const erro = await authResponse.text();
-      throw new Error("Erro na autenticação: " + erro);
-    }
-
-    const authData = await authResponse.json();
-    const apiKey = authData.apiKey;
-
-    console.log("✅ API Key recebida:", apiKey);
-
-    // Etapa 2: criar usuário
-    const userResponse = await fetch("https://api.pluggy.ai/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      }
-    });
-
-    console.log("📡 Enviando token de autorização:", `Bearer ${apiKey}`);
-
-    if (!userResponse.ok) {
-      const erroUser = await userResponse.text();
-      console.error("❌ Conteúdo da resposta:", erroUser);
-      throw new Error("Erro ao criar usuário: " + erroUser);
-    }
-
-    const userData = await userResponse.json();
-    const userToken = userData.userToken;
-
-    console.log("✅ User Token recebido:", userToken);
-    return userToken;
-
-  } catch (error) {
-    console.error("❌ Erro ao gerar userToken:", error);
-    throw new Error("❌ Falha ao gerar userToken");
-  }
-}
+    async function gerarUserToken() {
+      try {
+        // Etapa 1: autenticar para obter apiKey
+        const authResponse = await fetch("https://api.pluggy.ai/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ clientId, clientSecret })
+        });
 
         if (!authResponse.ok) {
           const erro = await authResponse.text();
@@ -84,7 +46,7 @@
         const apiKey = authData.apiKey;
         console.log("✅ API Key recebida:", apiKey);
 
-        // Etapa 2: gerar userToken via /users
+        // Etapa 2: criar usuário com a apiKey
         const userResponse = await fetch("https://api.pluggy.ai/users", {
           method: "POST",
           headers: {
@@ -93,15 +55,18 @@
           }
         });
 
+        console.log("📡 Enviando token de autorização:", `Bearer ${apiKey}`);
+
         if (!userResponse.ok) {
           const erroUser = await userResponse.text();
+          console.error("❌ Conteúdo da resposta:", erroUser);
           throw new Error("Erro ao criar usuário: " + erroUser);
         }
 
         const userData = await userResponse.json();
         const userToken = userData.userToken;
-        console.log("✅ User Token recebido:", userToken);
 
+        console.log("✅ User Token recebido:", userToken);
         return userToken;
 
       } catch (error) {
@@ -136,5 +101,6 @@
   </script>
 </body>
 </html>
+
 
 
