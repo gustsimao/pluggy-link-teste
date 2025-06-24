@@ -1,98 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Pluggy Link Teste (carregamento dinâmico)</title>
-  <style>
-    body { font-family: Arial; padding: 30px; background: #f4f4f4; }
-    button { padding: 10px 20px; font-size: 18px; margin-top: 10px; }
-    pre { margin-top: 20px; background: #fff; padding: 15px; border: 1px solid #ccc; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Teste Pluggy Connect</title>
+  <script src="https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js"></script>
 </head>
 <body>
-  <h2>Teste com PluggyLink (versão segura)</h2>
-  <button id="btnConectar" disabled>Conectar Conta Bancária</button>
-  <pre id="resultado">🔄 Carregando SDK do Pluggy...</pre>
+  <h2>Teste de carregamento da SDK Pluggy</h2>
+  <button onclick="testar()">Testar</button>
 
   <script>
-    const clientId = "fd905adc-6c7a-4bff-8564-0d1335785c6f";
-    const clientSecret = "a89d5902-587f-4a45-b9a6-3101a517d2c5";
-    const btn = document.getElementById('btnConectar');
-    const resultado = document.getElementById('resultado');
-
-    // Carrega o script dinamicamente
-    function carregarPluggyLink() {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');        
-        script.src = "https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js";
-        script.onload = resolve;
-        script.onerror = () => reject(new Error("Erro ao carregar pluggy-link.js"));
-        document.head.appendChild(script);
-      });
-    }
-
-    async function gerarUserToken() {
-      const res = await fetch("https://api.pluggy.ai/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId, clientSecret })
-      });
-      if (!res.ok) throw new Error("Falha ao gerar userToken");
-      const data = await res.json();
-      return data.userToken;
-    }
-
-    async function buscarContas(itemId) {
-      const res = await fetch(`https://api.pluggy.ai/accounts?itemId=${itemId}`);
-      const data = await res.json();
-      return data.results[0]?.id;
-    }
-
-    async function buscarTransacoes(accountId) {
-      const res = await fetch(`https://api.pluggy.ai/transactions?accountId=${accountId}&pageSize=10`);
-      const data = await res.json();
-      return data.results;
-    }
-
-    async function main() {
-      try {
-        await carregarPluggyLink();
-        resultado.textContent = "✅ SDK carregada com sucesso. Pronto para conectar.";
-        btn.disabled = false;
-
-        btn.onclick = async () => {
-          resultado.textContent = "🔄 Gerando token e conectando...";
-
-          try {
-            const userToken = await gerarUserToken();
-
-            const link = new PluggyLink({
-              connectToken: userToken,
-              onSuccess: async (item) => {
-                resultado.textContent = "🔍 Conta conectada. Carregando transações...";
-                const accountId = await buscarContas(item.id);
-                const transacoes = await buscarTransacoes(accountId);
-                resultado.textContent = transacoes.length
-                  ? transacoes.map(tx => `${tx.date} - ${tx.description} - R$ ${tx.amount.toFixed(2)}`).join("\n")
-                  : "📭 Nenhuma transação encontrada.";
-              },
-              onError: (err) => {
-                resultado.textContent = "❌ Erro ao conectar: " + err.message;
-              }
-            });
-
-            link.open();
-          } catch (e) {
-            resultado.textContent = "❌ Erro: " + e.message;
-          }
-        };
-      } catch (err) {
-        resultado.textContent = "❌ Erro ao carregar SDK: " + err.message;
+    function testar() {
+      if (typeof PluggyConnect !== "undefined") {
+        alert("✅ PluggyConnect carregado com sucesso!");
+      } else {
+        alert("❌ PluggyConnect NÃO carregado.");
       }
     }
-
-    // Executa tudo
-    main();
   </script>
 </body>
 </html>
