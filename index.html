@@ -5,22 +5,12 @@
   <title>Pluggy Connect - Teste</title>
   <script src="https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      padding: 40px;
-    }
-    button {
-      font-size: 18px;
-      padding: 10px 20px;
-    }
+    body { font-family: Arial, padding: 40px; background: #f2f2f2; }
+    button { font-size: 18px; padding: 10px 20px; }
     pre {
-      margin-top: 30px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      border: 1px solid #ccc;
+      margin-top: 30px; background: #fff;
+      padding: 20px; border-radius: 8px;
+      white-space: pre-wrap; border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -56,7 +46,7 @@
 
         const connect = new PluggyConnect({
           connectToken: token,
-          onSuccess: async (item) => {
+          onSuccess: (item) => {
             saida.textContent = `✅ Sucesso!\n\nID do item: ${item.id}\nNome: ${item.name}`;
           },
           onError: (err) => {
@@ -64,7 +54,7 @@
           }
         });
 
-        connect.open();
+        connect.init(); // 🔄 AQUI USAMOS init() e não open()
       } catch (err) {
         saida.textContent = err.message;
       }
