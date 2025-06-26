@@ -1,106 +1,82 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Pluggy Sandbox - Teste com Debug</title>
+  <meta charset="UTF-8">
+  <title>Pluggy Connect - Teste</title>
   <script src="https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js"></script>
   <style>
-    body { font-family: Arial; padding: 40px; background: #f0f0f0; }
+    body { font-family: Arial, padding: 40px; background: #f2f2f2; }
     button { font-size: 18px; padding: 10px 20px; }
-    pre { background: #fff; padding: 20px; margin-top: 20px; border-radius: 8px; white-space: pre-wrap;}
+    pre {
+      margin-top: 30px; background: #fff;
+      padding: 20px; border-radius: 8px;
+      white-space: pre-wrap; border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
-  <h2>🔗 Conectar conta simulada (Pluggy)</h2>
+  <h2>🔗 Conectar Conta Bancária com Pluggy</h2>
   <button onclick="abrirPluggy()">Conectar Conta</button>
   <pre id="saida">Clique no botão para iniciar</pre>
 
   <script>
-    const clientId = "65c9e09d-9f6b-4283-882a-16a1e7d40679";  // seu clientId sandbox
-    const clientSecret = "a4b1216b-c440-418c-a5af-b71becc06a44"; // seu clientSecret sandbox
-    const API = "https://api.pluggy.ai";
-    const saida = document.getElementById("saida");
+    const clientId = "29d9ef9d-5ce6-47a8-9da0-01fd2ecbb416";
+    const clientSecret = "e93c1994-e9e5-450d-895f-f9e49a6afbac";
+    const saida = document.getElementById('saida');
 
-    async function gerarConnectToken() {
+    // Gera userToken usando o clientId e clientSecret
+    async function gerarUserToken() {
       try {
-        // Etapa 1: Autenticação
-        saida.textContent = "Autenticando...";
-        const authResponse = await fetch(`${API}/auth`, {
+        const response = await fetch("https://api.pluggy.ai/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ clientId, clientSecret })
         });
 
-        const authData = await authResponse.json();
-        if (!authResponse.ok) throw new Error(`Auth falhou: ${JSON.stringify(authData)}`);
-        saida.textContent = "Autenticado! API Key recebida.";
+        if (!response.ok) {
+          const erroDetalhado = await response.text();
+          console.error("❌ Erro da API:", erroDetalhado);
+          throw new Error("❌ Erro na requisição: " + response.status);
+        }
 
-        const apiKey = authData.apiKey;
-        if (!apiKey) throw new Error("apiKey está vazio!");
-
-        // Etapa 2: Criar usuário
-        saida.textContent = "Criando usuário temporário...";
-        const userResponse = await fetch(`${API}/users`, {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
-          }
-        });
-
-        const userData = await userResponse.json();
-        if (!userResponse.ok) throw new Error(`Falha ao criar usuário: ${JSON.stringify(userData)}`);
-
-        saida.textContent = "Usuário criado!";
-
-        const userToken = userData.userToken;
-        if (!userToken) throw new Error("userToken está vazio!");
-
-        // Etapa 3: Gerar connectToken
-        saida.textContent = "Gerando connectToken...";
-        const connectResponse = await fetch(`${API}/connect_token`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${userToken}`
-          }
-        });
-
-        const connectData = await connectResponse.json();
-        if (!connectResponse.ok) throw new Error(`Falha ao gerar connectToken: ${JSON.stringify(connectData)}`);
-
-        const connectToken = connectData.connectToken;
-        if (!connectToken) throw new Error("connectToken está vazio!");
-
-        saida.textContent = "connectToken gerado com sucesso!";
-        return connectToken;
+        const data = await response.json();
+        console.log("🔑 Token recebido:", data);
+        return data.userToken;
 
       } catch (error) {
-        saida.textContent = "❌ Erro detalhado: " + error.message;
-        console.error(error);
-        return null;
+        console.error("❌ Erro ao gerar userToken:", error);
+        throw new Error("❌ Falha ao gerar userToken");
       }
     }
 
+    // Função principal que abre o Pluggy Connect
     async function abrirPluggy() {
-      saida.textContent = "⏳ Iniciando fluxo de conexão...";
-      const token = await gerarConnectToken();
-      if (!token) return;
+      saida.textContent = "⏳ Gerando token...";
+      try {
+        const token = await gerarUserToken();
 
-      const widget = new PluggyConnect({
-        connectToken: token,
-        onSuccess: (item) => {
-          saida.textContent = `✅ Conta conectada: ${item.name} (ID: ${item.id})`;
-        },
-        onError: (err) => {
-          saida.textContent = `❌ Erro no widget: ${err.message}`;
+        if (!token) {
+          throw new Error("❌ Token não foi definido.");
         }
-      });
 
-      widget.init();
+        const connect = new PluggyConnect({
+          connectToken: token,
+          onSuccess: (item) => {
+            saida.textContent = `✅ Sucesso!\n\nID do item: ${item.id}\nNome: ${item.name}`;
+            console.log("✅ Conta conectada:", item);
+          },
+          onError: (err) => {
+            saida.textContent = "❌ Erro no Pluggy Connect: " + err.message;
+            console.error("❌ Erro no widget:", err);
+          }
+        });
+
+        connect.init(); // Chamada correta com o novo SDK
+
+      } catch (err) {
+        saida.textContent = err.message;
+      }
     }
   </script>
 </body>
 </html>
-
-
