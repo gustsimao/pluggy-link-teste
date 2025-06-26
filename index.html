@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Pluggy Connect - Sandbox</title>
+  <title>Pluggy Sandbox - Teste de Conexão</title>
   <script src="https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js"></script>
   <style>
     body { font-family: Arial, padding: 40px; background: #f2f2f2; }
@@ -18,35 +18,29 @@
   </style>
 </head>
 <body>
-  <h2>🔗 Conectar Conta Bancária (Sandbox)</h2>
+  <h2>🔗 Conectar Conta Bancária Simulada (Pluggy Sandbox)</h2>
   <button onclick="abrirPluggy()">Conectar Conta</button>
   <pre id="saida">Clique no botão para iniciar</pre>
 
   <script>
-     const clientId = "65c9e09d-9f6b-4283-882a-16a1e7d40679"; // SEU SANDBOX clientId
-    const clientSecret = "a4b1216b-c440-418c-a5af-b71becc06a44"; // SEU SANDBOX clientSecret
-    const API_BASE = "https://sandbox.pluggy.ai"; // ✅ SANDBOX URL
-
+    const clientId = "65c9e09d-9f6b-4283-882a-16a1e7d40679";  // seu clientId sandbox
+    const clientSecret = "a4b1216b-c440-418c-a5af-b71becc06a44"; // seu clientSecret sandbox
+    const API_BASE = "https://api.sandbox.pluggy.ai";
     const saida = document.getElementById("saida");
 
-    async function gerarUserToken() {
+    async function gerarConnectToken() {
       try {
+        // Obtem a apiKey
         const authResponse = await fetch(`${API_BASE}/auth`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ clientId, clientSecret })
         });
 
-        if (!authResponse.ok) {
-          const erro = await authResponse.text();
-          throw new Error("Erro na autenticação: " + erro);
-        }
-
         const authData = await authResponse.json();
         const apiKey = authData.apiKey;
 
-        console.log("✅ API Key recebida:", apiKey);
-
+        // Cria o usuário temporário
         const userResponse = await fetch(`${API_BASE}/users`, {
           method: "POST",
           headers: {
@@ -55,46 +49,49 @@
           }
         });
 
-        if (!userResponse.ok) {
-          const erroUser = await userResponse.text();
-          console.error("❌ Conteúdo da resposta:", erroUser);
-          throw new Error("Erro ao criar usuário: " + erroUser);
-        }
-
         const userData = await userResponse.json();
         const userToken = userData.userToken;
 
-        console.log("✅ User Token recebido:", userToken);
-        return userToken;
+        // Gera o connectToken
+        const connectTokenResponse = await fetch(`${API_BASE}/connect_token`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${userToken}`
+          },
+          body: JSON.stringify({
+            // opcional: definir connectorId ou countries
+          })
+        });
 
+        const connectData = await connectTokenResponse.json();
+        return connectData.connectToken;
       } catch (error) {
-        console.error("❌ Erro ao gerar userToken:", error);
-        throw new Error("❌ Falha ao gerar userToken");
+        saida.textContent = "❌ Erro ao gerar connectToken: " + error;
+        console.error(error);
+        return null;
       }
     }
 
     async function abrirPluggy() {
-      saida.textContent = "⏳ Gerando token e abrindo conexão...";
-      try {
-        const token = await gerarUserToken();
+      saida.textContent = "⏳ Gerando token de conexão...";
 
-        const connect = new PluggyConnect({
-          connectToken: token,
-          onSuccess: (item) => {
-            saida.textContent = `✅ Conta conectada!\nID: ${item.id}\nNome: ${item.name}`;
-            console.log("✅ Sucesso:", item);
-          },
-          onError: (err) => {
-            saida.textContent = "❌ Erro no Pluggy Connect: " + err.message;
-            console.error("❌ Erro no widget:", err);
-          }
-        });
+      const token = await gerarConnectToken();
+      if (!token) return;
 
-        connect.init();
+      const connect = new PluggyConnect({
+        connectToken: token,
+        onSuccess: (item) => {
+          saida.textContent = `✅ Conta conectada com sucesso!\n\nNome: ${item.name}\nID: ${item.id}`;
+          console.log("🔗 Conta conectada:", item);
+        },
+        onError: (err) => {
+          saida.textContent = "❌ Erro no Pluggy Connect: " + err.message;
+          console.error("Erro:", err);
+        }
+      });
 
-      } catch (err) {
-        saida.textContent = err.message;
-      }
+      connect.init();
     }
   </script>
 </body>
