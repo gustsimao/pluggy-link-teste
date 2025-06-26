@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Pluggy Connect - Teste</title>
+  <title>Pluggy Connect - Sandbox</title>
   <script src="https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js"></script>
   <style>
     body { font-family: Arial, padding: 40px; background: #f2f2f2; }
@@ -18,20 +18,20 @@
   </style>
 </head>
 <body>
-  <h2>🔗 Conectar Conta Bancária com Pluggy</h2>
+  <h2>🔗 Conectar Conta Bancária (Sandbox)</h2>
   <button onclick="abrirPluggy()">Conectar Conta</button>
   <pre id="saida">Clique no botão para iniciar</pre>
 
   <script>
-    const clientId = "fd905adc-6c7a-4bff-8564-0d1335785c6f"; // insira o correto
-    const clientSecret = "a89d5902-587f-4a45-b9a6-3101a517d2c5"; // insira o correto
+    const clientId = "fd905adc-6c7a-4bff-8564-0d1335785c6f"; // SEU SANDBOX clientId
+    const clientSecret = "a89d5902-587f-4a45-b9a6-3101a517d2c5"; // SEU SANDBOX clientSecret
+    const API_BASE = "https://api.sandbox.pluggy.ai"; // ✅ SANDBOX URL
 
     const saida = document.getElementById("saida");
 
     async function gerarUserToken() {
       try {
-        // Etapa 1: autenticar para obter apiKey
-        const authResponse = await fetch("https://api.pluggy.ai/auth", {
+        const authResponse = await fetch(`${API_BASE}/auth`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ clientId, clientSecret })
@@ -44,18 +44,16 @@
 
         const authData = await authResponse.json();
         const apiKey = authData.apiKey;
+
         console.log("✅ API Key recebida:", apiKey);
 
-        // Etapa 2: criar usuário com a apiKey
-        const userResponse = await fetch("https://api.pluggy.ai/users", {
+        const userResponse = await fetch(`${API_BASE}/users`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${apiKey}`
           }
         });
-
-        console.log("📡 Enviando token de autorização:", `Bearer ${apiKey}`);
 
         if (!userResponse.ok) {
           const erroUser = await userResponse.text();
@@ -101,6 +99,3 @@
   </script>
 </body>
 </html>
-
-
-
